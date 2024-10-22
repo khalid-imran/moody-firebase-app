@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <title>Moody</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Cabin:wght@400;500;600;700&family=Calistoga&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="style.css">
+</head>
+
+<body>
+<section id="logged-out-view">
+    <div class="container">
+        <h1 class="app-title">Moody</h1>
+
+        <div class="provider-buttons">
+            <button id="sign-in-with-google-btn" class="provider-btn">
+                <img src="https://img.icons8.com/?size=80&id=hFJUPuQ-CF0p&format=png" class="google-btn-logo">
+                Sign in with Google
+            </button>
+        </div>
+
+        <div class="auth-fields-and-buttons">
+            <input id="email-input" type="email" placeholder="Email">
+            <input id="password-input" type="password" placeholder="Password">
+            <div class="btn-section">
+                <button id="sign-in-btn" class="primary-btn">Sign in</button>
+                <button id="create-account-btn" class="primary-btn green">Sign up</button>
+            </div>
+            <div id="error-message" class="error-response"></div>
+        </div>
+    </div>
+</section>
+
+<section id="logged-in-view">
+    <div class="container">
+        <nav>
+            <button id="sign-out-btn" class="icon-btn">
+                <img src="https://img.icons8.com/?size=30&id=42924&format=png" class="icon-img-btn">
+            </button>
+        </nav>
+        <div class="app-container">
+            <div class="user-section">
+                <img id="user-profile-picture">
+            </div>
+        </div>
+
+    </div>
+</section>
+
+<script src="dist/bundle.js" type="module"></script>
+</body>
+
+</html>
