@@ -7441,6 +7441,74 @@ function signInWithEmailAndPassword(auth, email, password) {
         throw error;
     });
 }
+
+/**
+ * @license
+ * Copyright 2020 Google LLC
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *   http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+async function updateProfile$1(auth, request) {
+    return _performApiRequest(auth, "POST" /* HttpMethod.POST */, "/v1/accounts:update" /* Endpoint.SET_ACCOUNT_INFO */, request);
+}
+
+/**
+ * @license
+ * Copyright 2020 Google LLC
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *   http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+/**
+ * Updates a user's profile data.
+ *
+ * @param user - The user.
+ * @param profile - The profile's `displayName` and `photoURL` to update.
+ *
+ * @public
+ */
+async function updateProfile(user, { displayName, photoURL: photoUrl }) {
+    if (displayName === undefined && photoUrl === undefined) {
+        return;
+    }
+    const userInternal = getModularInstance(user);
+    const idToken = await userInternal.getIdToken();
+    const profileRequest = {
+        idToken,
+        displayName,
+        photoUrl,
+        returnSecureToken: true
+    };
+    const response = await _logoutIfInvalidated(userInternal, updateProfile$1(userInternal.auth, profileRequest));
+    userInternal.displayName = response.displayName || null;
+    userInternal.photoURL = response.photoUrl || null;
+    // Update the password provider as well
+    const passwordProvider = userInternal.providerData.find(({ providerId }) => providerId === "password" /* ProviderId.PASSWORD */);
+    if (passwordProvider) {
+        passwordProvider.displayName = userInternal.displayName;
+        passwordProvider.photoURL = userInternal.photoURL;
+    }
+    await userInternal._updateTokensIfNecessary(response);
+}
 /**
  * Adds an observer for changes to the signed-in user's ID token.
  *
@@ -9903,6 +9971,12 @@ const signInButtonEl = document.getElementById("sign-in-btn");
 const createAccountButtonEl = document.getElementById("create-account-btn");
 const signOutButtonEl = document.getElementById("sign-out-btn");
 const errorMsgEl = document.getElementById("error-message");
+const userProfilePictureEl = document.getElementById("user-profile-picture");
+const userProfileGreetEl = document.getElementById("user-greeting");
+const displayNameInputEl = document.getElementById("display-name-input");
+const photoURLInputEl = document.getElementById("photo-url-input");
+const updateProfileButtonEl = document.getElementById("update-profile-btn");
+const userHasNoNameEl = document.getElementById("user-has-no-name");
 
 /* == UI - Event Listeners == */
 
@@ -9910,7 +9984,7 @@ signInWithGoogleButtonEl.addEventListener("click", authSignInWithGoogle);
 signInButtonEl.addEventListener("click", authSignInWithEmail);
 createAccountButtonEl.addEventListener("click", authCreateAccountWithEmail);
 signOutButtonEl.addEventListener("click", authSignOut);
-const userProfilePictureEl = document.getElementById("user-profile-picture");
+updateProfileButtonEl.addEventListener("click", authUpdateProfile);
 
 /* === Main Code === */
 
@@ -9921,6 +9995,7 @@ onAuthStateChanged(auth, user => {
   if (user) {
     showLoggedInView();
     showProfilePicture(userProfilePictureEl, user);
+    showUserGreeting(userProfileGreetEl, user);
   } else {
     showLoggedOutView();
   }
@@ -9987,6 +10062,29 @@ function showProfilePicture(imgElement, user) {
   } else {
     imgElement.src = "https://img.icons8.com/?size=60&id=0lg0kb05hrOz&format=png";
   }
+}
+function showUserGreeting(element, user) {
+  const displayName = user.displayName;
+  if (displayName) {
+    const userFirstName = displayName.split(" ")[0];
+    element.textContent = `Hey ${userFirstName}, how are you?`;
+  } else {
+    userHasNoNameEl.style.display = 'block';
+    element.textContent = `Hey friend, how are you?`;
+  }
+}
+function authUpdateProfile() {
+  let displayName = displayNameInputEl.value;
+  let photoURL = photoURLInputEl.value;
+  updateProfile(auth.currentUser, {
+    displayName: displayName,
+    photoURL: photoURL
+  }).then(() => {
+    location.reload();
+  }).catch(error => {
+    // An error occurred
+    // ...
+  });
 }
 
 /* == Functions - UI Functions == */

@@ -7,7 +7,8 @@ import {
     onAuthStateChanged,
     signOut,
     signInWithPopup,
-    GoogleAuthProvider
+    GoogleAuthProvider,
+    updateProfile
 } from "firebase/auth"
 /* === Firebase Setup === */
 const firebaseConfig = {
@@ -42,6 +43,15 @@ const signOutButtonEl = document.getElementById("sign-out-btn")
 
 const errorMsgEl = document.getElementById("error-message")
 
+const userProfilePictureEl = document.getElementById("user-profile-picture")
+const userProfileGreetEl = document.getElementById("user-greeting")
+
+const displayNameInputEl = document.getElementById("display-name-input")
+const photoURLInputEl = document.getElementById("photo-url-input")
+const updateProfileButtonEl = document.getElementById("update-profile-btn")
+
+const userHasNoNameEl = document.getElementById("user-has-no-name")
+
 /* == UI - Event Listeners == */
 
 signInWithGoogleButtonEl.addEventListener("click", authSignInWithGoogle)
@@ -50,7 +60,9 @@ signInButtonEl.addEventListener("click", authSignInWithEmail)
 createAccountButtonEl.addEventListener("click", authCreateAccountWithEmail)
 signOutButtonEl.addEventListener("click", authSignOut)
 
-const userProfilePictureEl = document.getElementById("user-profile-picture")
+updateProfileButtonEl.addEventListener("click", authUpdateProfile)
+
+
 
 /* === Main Code === */
 
@@ -62,6 +74,7 @@ onAuthStateChanged(auth, (user) => {
     if (user) {
         showLoggedInView()
         showProfilePicture(userProfilePictureEl, user)
+        showUserGreeting(userProfileGreetEl, user)
     } else {
         showLoggedOutView()
     }
@@ -140,6 +153,29 @@ function showProfilePicture(imgElement, user) {
     } else {
         imgElement.src = "https://img.icons8.com/?size=60&id=0lg0kb05hrOz&format=png"
     }
+}
+function showUserGreeting(element, user) {
+    const displayName = user.displayName;
+    if (displayName) {
+        const userFirstName = displayName.split(" ")[0]
+        element.textContent = `Hey ${userFirstName}, how are you?`
+    } else {
+        userHasNoNameEl.style.display = 'block'
+        element.textContent = `Hey friend, how are you?`
+    }
+}
+
+function authUpdateProfile() {
+    let displayName = displayNameInputEl.value;
+    let photoURL = photoURLInputEl.value;
+    updateProfile(auth.currentUser, {
+        displayName: displayName, photoURL: photoURL
+    }).then(() => {
+        location.reload()
+    }).catch((error) => {
+        // An error occurred
+        // ...
+    });
 }
 
 /* == Functions - UI Functions == */
